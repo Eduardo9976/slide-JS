@@ -6,34 +6,46 @@ export default class Slide {
     
   }
   moveSlide(distX) {
-    this.dist.movePosition = distX
+    this.dist.movePosition = distX;
     this.slide.style.transform = `translate3d(${distX}px, 0, 0)`;
   }
 
   updatePosition(clientX) {
-    this.dist.movement = (this.dist.startX - event.clientX) * 1.6
-    return this.dist.finalPosition - this.dist.movement
+    this.dist.movement =  (this.dist.startX - clientX) * 1.6
+    return  this.dist.finalPosition -  this.dist.movement
   }
 
   onStart(event) {
-    event.preventDefault();
-    this.wrapper.addEventListener('mousemove', this.onMove);
-    this.dist.startX = event.clientX
+    let moveType;
+    if (event.type === 'mousedown') {
+      event.preventDefault();
+      this.dist.startX = event.clientX;
+      moveType = 'mousemove';
+    } else {
+      this.dist.startX = + event.changedTouches[0].clientX;
+      moveType = 'touchmove';
+    }
+    this.wrapper.addEventListener(moveType, this.onMove, { passive: false});
+    
   }
   onMove(event) {
-    event.preventDefault()
-    const finalPosition = this.updatePosition();
-    this.moveSlide(finalPosition)
+    const pointerPosition = (event.type === 'mousemove') ? event.clientX : event.changedTouches[0].clientX;
+    const finalPosition = this.updatePosition(pointerPosition);
+    this.moveSlide(finalPosition);
   }
 
   onEnd(event) {
-    this.wrapper.removeEventListener('mousemove', this.onMove);
-    this.dist.finalPosition = event.clientX
-    this.dist.finalPosition = this.dist.movePosition
+    const movetype = (event.type === 'mousemove') ? 'mousemove' : 'touchmove'; 
+    this.wrapper.removeEventListener(movetype, this.onMove);
+    this.dist.finalPosition = event.clientX;
+    this.dist.finalPosition = this.dist.movePosition;
   }
   addSlideEvents() {
     this.wrapper.addEventListener('mousedown', this.onStart);
+    this.wrapper.addEventListener('touchstart', this.onStart, { passive: false});
     this.wrapper.addEventListener('mouseup', this.onEnd);
+    this.wrapper.addEventListener('touchend', this.onEnd, { passive: false});
+
   }
   bindEvents() {
     //ref callbabk
